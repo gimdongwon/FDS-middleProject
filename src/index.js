@@ -1,10 +1,13 @@
 import axios from 'axios';
 
-const postAPI = axios.create({
-
-});
-
+const postAPI = axios.create({});
 const rootEl = document.querySelector(".root");
+if(localStorage.getItem('token')){
+  postAPI.defaults.headers['Authorization'] = `Bearer ${localStorage.getItem('token')}`;
+  rootEl.classList.add('root--authed');
+}
+
+
 const templates = {
   postList: document.querySelector("#post-list").content,
   postItem: document.querySelector("#post-item").content,
@@ -20,9 +23,18 @@ function render(fragment) {
 async function indexPage() {
   const res = await postAPI.get('http://localhost:3000/posts');
   const listFragment = document.importNode(templates.postList, true);
+  
   listFragment.querySelector('.post-list__login-btn').addEventListener('click', e=>{
     loginPage();
   })
+
+listFragment.querySelector('.post-list__logout-btn').addEventListener('click',e=>{
+  localStorage.removeItem('token') // logout 과정
+  delete postAPI.defaults.headers['Authorization'];
+  rootEl.classList.remove('root--authed');
+  indexPage();
+})
+
   res.data.forEach(post => {
     const fragment = document.importNode(templates.postItem, true);
     const pEl = fragment.querySelector('.post-item__title');
@@ -58,7 +70,8 @@ async function loginPage(){
      e.preventDefault();
      const res = await postAPI.post('http://localhost:3000/users/login', payload);
       localStorage.setItem('token', res.data.token);
-      postAPI.defaults.headers['Authorization'] = res.data.token;
+      postAPI.defaults.headers['Authorization'] = `Bearer ${res.data.token}`;
+    rootEl.classList.add('root--authed');
       indexPage();
   })
   render(fragment);
