@@ -1,23 +1,28 @@
-import axios from 'axios';
+import axios from 'axios'; // axios를 사용하기 위해 npm을 통해 설치
 
-const postAPI = axios.create({
+const postAPI = axios.create({ // 3000서버에서 데이터를 가져오기 위해 설정하고 중복을 막기위해 baseURL설정
   baseURL: "http://localhost:3000"
 });
-const rootEl = document.querySelector(".root");
 
 
-function login(token) {
+const rootEl = document.querySelector(".root"); // 왜 함??
+
+
+
+
+
+function login(token) { // 토큰을 3000서버에서 가져와서 로컬 저장소에 저장을 하고 일치하는 지 확인후 권한을 부여함
   localStorage.setItem('token', token);
   postAPI.defaults.headers['Authorization'] = `Bearer ${token}`;
   rootEl.classList.add('root--authed');
 }
+
 
 function logout() {
   localStorage.removeItem("token"); // logout 과정
   delete postAPI.defaults.headers["Authorization"];
   rootEl.classList.remove("root--authed");
 }
-
 
 const templates = {
   postList: document.querySelector("#post-list").content,
@@ -27,10 +32,16 @@ const templates = {
   postForm: document.querySelector('#post-form').content
 };
 
+
+
+
 function render(fragment) {
   rootEl.textContent = '';
   rootEl.appendChild(fragment);
 }
+
+
+
 
 async function indexPage() {
   const res = await postAPI.get('/posts');
@@ -38,7 +49,6 @@ async function indexPage() {
   
   listFragment.querySelector('.post-list__login-btn').addEventListener('click', e=>{
     loginPage();
-    
   })
 
 listFragment.querySelector('.post-list__logout-btn').addEventListener('click',e=>{
@@ -54,6 +64,8 @@ listFragment.querySelector('.post-list__logout-btn').addEventListener('click',e=
     const fragment = document.importNode(templates.postItem, true);
     const pEl = fragment.querySelector('.post-item__title');
     pEl.textContent = post.title;
+    const pEl2 = fragment.querySelector(".post-item__userId");
+    pEl2.textContent = 'userId : ' + post.userId;
     pEl.addEventListener('click', e => {
       postContentPage(post.id);
     })
@@ -61,9 +73,9 @@ listFragment.querySelector('.post-list__logout-btn').addEventListener('click',e=
   })
   render(listFragment);  
 
-    
-
 }
+
+
 
 async function postContentPage(postId) {
   const res = await postAPI.get(`/posts/${postId}`)
@@ -75,6 +87,9 @@ async function postContentPage(postId) {
   })
  render(fragment)
 }
+
+
+
 
 async function loginPage(){
   const fragment = document.importNode(templates.login, true);
@@ -111,9 +126,13 @@ async function postFormPage() {
   })
   render(fragment);
 }
+
+
+
 if (localStorage.getItem('token')) {
   login(localStorage.getItem('token'));
 }
 
 
 indexPage();
+
